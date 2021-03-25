@@ -5,17 +5,21 @@ from transformers import Wav2Vec2Processor
 
 
 # Preparing dataset for training
-def prepare_dataset(batch, processor):
-    # check that all files have the correct sampling rate
-    assert (
-            len(set(batch["sampling_rate"])) == 1
-    ), f"Make sure all inputs have the same sampling rate of {processor.feature_extractor.sampling_rate}."
+class PrepareDataset:
+    def __init__(self, processor):
+        self.processor = processor
 
-    batch["input_values"] = processor(batch["speech"], sampling_rate=batch["sampling_rate"][0]).input_values
+    def prepare_dataset(self, batch):
+        # check that all files have the correct sampling rate
+        assert (
+                len(set(batch["sampling_rate"])) == 1
+        ), f"Make sure all inputs have the same sampling rate of {self.processor.feature_extractor.sampling_rate}."
 
-    with processor.as_target_processor():
-        batch["labels"] = processor(batch["target_text"]).input_ids
-    return batch
+        batch["input_values"] = self.processor(batch["speech"], sampling_rate=batch["sampling_rate"][0]).input_values
+
+        with self.processor.as_target_processor():
+            batch["labels"] = self.processor(batch["target_text"]).input_ids
+        return batch
 
 
 # Special Data Collator
